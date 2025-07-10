@@ -29,7 +29,7 @@ jobs:
         id: set-variables
         run: |
           echo "REPOSITORY=ghcr.io/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
-          echo "VERSION=$(yq -r .version ./charts/${{ env.CHART_NAME }}/Chart.yaml)" >> "$GITHUB_OUTPUT"
+          echo "VERSION=$(yq -r .version ./${{ env.CHART_NAME }}/Chart.yaml)" >> "$GITHUB_OUTPUT"
 
       - name: Syntax check
         run: |
@@ -44,5 +44,5 @@ jobs:
       - name: Package and push Helm chart
         if: steps.changes.outputs.chart-yaml == 'true'
         run: |
-          helm package ./charts/${{ env.CHART_NAME }} --version ${{ steps.set-variables.outputs.VERSION }}
+          helm package ./${{ env.CHART_NAME }} --version ${{ steps.set-variables.outputs.VERSION }}
           helm push ./${{ env.CHART_NAME }}-${{ steps.set-variables.outputs.VERSION }}.tgz oci://${{ steps.set-variables.outputs.REPOSITORY }}
