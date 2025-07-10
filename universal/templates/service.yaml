@@ -1,0 +1,24 @@
+# templates/service.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.nameSpace }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  {{- if .Values.port }}
+  ports:
+    - port: {{ .Values.port }}
+      name: http
+  {{- end }}
+  {{- if .Values.ports }}
+  ports:
+    {{- range .Values.ports }}
+    - port: {{ . }}
+      name: {{ printf "port%d" (. | int) }}
+    {{- end }}
+  {{- end }}
+  selector:
+    app: {{ .Release.Name }}

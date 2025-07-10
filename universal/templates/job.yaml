@@ -1,0 +1,58 @@
+# templates/job.yaml
+{{- range .Values.jobs }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $.Release.Name }}-{{ .name }}-{{ randAlphaNum 4 | lower }}
+  namespace: {{ $.Values.nameSpace }}
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+        {{- toYaml $.Values.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: {{ $.Release.Name }}-{{ .name }}
+        {{- if $.Values.image.job }}
+          image: {{ $.Values.image.job }}
+        {{- else }}
+          image: {{ $.Values.image.name }}:{{ $.Values.image.tag }}-{{ .name }}
+        {{- end }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+        {{- if .command }}
+          command:
+          {{- range .command }}
+            - {{ . | quote }}
+          {{- end }}
+        {{- end }}
+          env:
+          {{- range $key, $value := $.Values.runVars }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+          {{- end }}
+          resources:
+            {{- toYaml $.Values.resources | nindent 16 }}
+          volumeMounts:
+          {{- range $.Values.deploymentConfigMaps }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}/{{ .configMapName }}
+              subPath: {{ .configMapName }}
+          {{- end }}
+          {{- range $.Values.deploymentVolumes }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+          {{- end }}
+      volumes:
+      {{- range $.Values.deploymentConfigMaps }}
+        - name: {{ .name }}
+          configMap:
+            name: {{ $.Release.Name }}-{{ .configMapName | trunc 63 | replace "." "-" | lower }}
+      {{- end }}
+      {{- range $.Values.deploymentVolumes }}
+        - name: {{ .name }}
+        nfs:
+          server: {{ .server }}
+          path: {{ .share }}
+      {{- end }}
+{{- end }}

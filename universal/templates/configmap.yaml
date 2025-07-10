@@ -1,0 +1,17 @@
+# templates/configmap.yaml
+{{- if .Values.configMaps }}
+  {{- range $deploymentConfig := .Values.deploymentConfigMaps }}
+  {{- $name := $deploymentConfig.name }}
+  {{- $configMapName := $deploymentConfig.configMapName }}
+---
+# ConfigMap for {{ $configMapName }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $.Release.Name }}-{{ $configMapName }}
+  namespace: {{ $.Values.nameSpace }}
+data:
+  {{ $name }}: |
+    {{- tpl (index $.Values.configMaps $configMapName) $ | nindent 4 }}
+    {{- end }}
+  {{- end }}
