@@ -1,3 +1,15 @@
 apiVersion: v2
 name: "universal"
 version: "1.0"
+
+appVersion: "0.0"
+type: application
+maintainers:
+  - name: Providus Managed Cloud
+    email: hostmaster@providus.rs
+keywords:
+  - universal
+  - infra-simple
+home: https://github.com/providus/helmcharts
+sources:
+  - https://github.com/providus/helmcharts
