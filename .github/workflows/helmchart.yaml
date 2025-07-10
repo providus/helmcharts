@@ -1,4 +1,4 @@
-name: Publish helmchart ${{ env.CHART_NAME }}
+name: Publish helmchart (universal)
 
 on:
   pull_request:
