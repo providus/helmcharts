@@ -1,15 +1,11 @@
 ## https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#replicas
 replicaCount: 1
 
-## Port used by Pod/Service/Ingress
-## used for ports in Pod and Service
-port: 80
 ## alternative port usage if needed more than one
 ## the FIRST ONE in the list is used for Ingress
-#ports:
-#  - 80
-#  - 81
-#  - 82
+ports:
+  - 80
+  - 81
 
 ## Pod image
 image:
