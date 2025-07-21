@@ -1,4 +1,5 @@
 name: Publish helmchart (universal)
+run-name: trigger by ${{ github.actor }}
 
 on:
   pull_request:
