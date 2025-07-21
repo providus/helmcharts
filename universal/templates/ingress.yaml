@@ -21,11 +21,7 @@ spec:
                 service:
                   name: {{ $.Release.Name }}
                   port:
-                    {{- if $.Values.port }}
-                    number: {{ $.Values.port }}
-                    {{- else }}
                     number: {{ index $.Values.ports 0 }}
-                    {{- end }}
           {{- end }}
           {{- else }}
           - path: {{ .Values.ingress.path | default "/" }}
@@ -33,12 +29,7 @@ spec:
             backend:
               service:
                 name: {{ .Release.Name }}
-                port:
-                  {{- if $.Values.port }}
-                  number: {{ $.Values.port }}
-                  {{- else }}
-                  number: {{ $.Values.port }}
-                  {{- end }}
+                number: {{ index $.Values.ports 0 }}
           {{- end }}
           {{- if .Values.remoteProxy.enabled }}
           {{- range .Values.remoteProxy.paths }}
