@@ -1,0 +1,19 @@
+# templates/service-proxy.yaml
+{{- if .Values.remoteProxy.enabled }}
+{{- range .Values.remoteProxy.paths }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Release.Name }}-{{ .name }}
+  namespace: {{ $.Values.nameSpace }}
+  labels:
+    app: {{ $.Release.Name }}-{{ .name }}
+spec:
+  type: ExternalName
+  externalName: {{ .host }}
+  ports:
+    - port: {{ .port }}
+      targetPort: {{ .port }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,21 @@
+# templates/pvc.yaml
+{{- if .Values.pvc }}
+  {{- range $pvc := .Values.pvc }}
+  {{- $name := $pvc.name }}
+  {{- $size := $pvc.size }}
+  {{- $class := $pvc.class }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $.Release.Name }}-{{ $name }}
+  namespace: {{ $.Values.nameSpace }}
+spec:
+  storageClassName: {{ $class }}
+  volumeName: {{ $name }}
+  resources:
+    requests:
+      storage: {{ $size }}
+  accessModes:
+    - ReadWriteOnce
+  {{- end }}
+{{- end }}

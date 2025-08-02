@@ -1,0 +1,175 @@
+## https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#replicas
+replicaCount: 1
+
+## alternative port usage if needed more than one
+## the FIRST ONE in the list is used for Ingress
+ports:
+  - 80
+  - 81
+
+## Pod image
+image:
+  ## this is used as container image inside Pod controlled by Deployment
+  name: providus/undefined
+  tag: latest
+  ## this is used as container image inside Pod controlled by Job
+  #job: curlimages/curl:latest
+
+  ## https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
+  pullPolicy: IfNotPresent
+
+## Ingress
+## https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  ## this is default vhost (change this)
+  host: not.configured
+
+## Resources for each pod
+## https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+
+## Credential for pulling images done by k8s
+## https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets:
+  - name: dockerhub
+
+
+## environment variables added to all Pod containers
+## https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+runVars:
+  EXAMPLE: 'example'
+
+
+## Container command override
+## https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#run-a-command-in-a-shell
+#command:
+#  - sh
+#  - -c
+#  - php artisan queue:work --tries=3 --timeout=3
+
+
+## Kubernetes RBAC service account
+## https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount: default
+
+
+## Horizontal Pod Autoscaler
+## https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+hpa:
+  enabled: false
+#hpa:
+#  enabled: true
+#  minReplicas: 2
+#  maxReplicas: 4
+#  manifest:
+#    metrics:
+#      - type: Resource
+#        resource:
+#          name: cpu
+#          target:
+#            type: Utilization
+#            averageUtilization: 60
+#    behavior:
+#      scaleDown:
+#        stabilizationWindowSeconds: 20
+#        policies:
+#          - type: Pods
+#            value: 1
+#            periodSeconds: 20
+
+
+
+## Use Service as a L4 proxy to external hostname (cannot be IP, use sslip.io or nip.io if you dont have hostname)
+## Useful for backend services running outside of Kubernetes
+## https://kubernetes.io/docs/concepts/services-networking/service/#externalname
+remoteProxy:
+  enabled: false
+#remoteProxy:
+#  enabled: true
+#  paths:
+#    - name: api
+#      path: /api
+#      host: 10.10.17.31.nip.io
+#      port: 8000
+
+
+## How to create new pods
+## https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+#strategyType: Recreate
+
+
+## ConfigMap
+## https://kubernetes.io/docs/concepts/configuration/configmap/#configmaps-and-pods
+#deploymentConfigMaps:
+#  - name: core.yml
+#    configMapName: core-yml
+#    mountPath: /app/config
+#configMaps:
+#  core-yml: |
+#    web:
+#      host: 0.0.0.0
+#      port: 8000
+#      debug: false
+
+## Cronjob
+## has to have image.job defined above
+## https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#example
+#cronJobs:
+#  - name: "update-data"
+#    schedule: "0 * * * *"
+#    command:
+#      - "/bin/sh"
+#      - "-c"
+#      - "npm run updateData"
+
+
+## InitContainer
+## https://kubernetes.io/docs/concepts/workloads/pods/init-containers/#init-containers-in-use
+#initContainers:
+#  - name: volume-permission
+#    image: busybox
+#    command:
+#      - sh
+#      - -c
+#      - chown -R 1000:1000 /data
+#    volumeMounts:
+#      - mountPath: /data
+#        name: data-volume
+
+
+## Volumes
+## https://kubernetes.io/docs/concepts/storage/volumes/
+#volumes:
+#  - name: data-volume
+#    mountPath: /data
+#    emptyDir:
+#      sizeLimit: 10Gi
+#      medium: ""
+#  - name: nfs-volume
+#    mountPath: /nfs
+#    nfs:
+#      server: 10.13.2.122
+#      path: "/NFS/pke/dev-cw/bctest"
+## This is "older" variant of volume (deprecated by code above)
+#deploymentVolumes:
+#  - name: nfs-share
+#    server: 10.13.2.122
+#    share: "/NFS/pke/dev-cw/bctest"
+#    mountPath: /nfs
+
+
+
+## NodeSelector
+## https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+#nodeSelector:
+#  client: shared

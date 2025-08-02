@@ -1,0 +1,94 @@
+# templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Values.nameSpace }}
+spec:
+{{- if ne (toString .Values.hpa.enabled) "true" }}
+  replicas: {{ .Values.replicaCount }}
+{{- end}}
+  strategy:
+    type: {{ .Values.strategyType | default "RollingUpdate" }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      imagePullSecrets:
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      serviceAccountName:  {{ .Values.serviceAccount }}
+      {{- if .Values.initContainers }}
+      initContainers:
+        {{- toYaml .Values.initContainers | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Release.Name }}
+          image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            {{- range .Values.ports }}
+            - name: {{ printf "port%d" (. | int) }}
+              containerPort: {{ . }}
+            {{- end }}
+          env:
+          {{- range $key, $value := .Values.runVars }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+          {{- end }}
+          {{- if .Values.command }}
+          command:
+            {{- toYaml .Values.command | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          # Mount volumes if specified
+          volumeMounts:
+          {{- range .Values.deploymentConfigMaps }}
+            - name: {{ .configMapName }}
+              mountPath: {{ .mountPath }}/{{ .name }}
+              subPath: {{ .name }}
+          {{- end }}
+          {{- range .Values.deploymentVolumes }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+          {{- end }}
+          {{- range .Values.volumes }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+          {{- end }}
+      volumes:
+      {{- range .Values.deploymentConfigMaps }}
+        - name: {{ .configMapName }}
+          configMap:
+            name: {{ $.Release.Name }}-{{ .configMapName }}
+      {{- end }}
+      {{- range .Values.volumes }}
+        - name: {{ .name }}
+        {{- if .emptyDir }}
+          emptyDir:
+            {{- toYaml .emptyDir | nindent 12 }}
+        {{- end }}
+        {{- if .nfs }}
+          ## TODO: migrirati postojeće deploymente
+          nfs:
+            {{- toYaml .nfs | nindent 12 }}
+        {{- end }}
+      {{- end }}
+      {{- range .Values.deploymentVolumes }}
+        - name: {{ .name }}
+          nfs:
+            server: {{ .server }}
+            path: {{ .share }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      {{- end }}
