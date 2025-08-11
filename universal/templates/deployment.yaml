@@ -81,6 +81,10 @@ spec:
           nfs:
             {{- toYaml .nfs | nindent 12 }}
         {{- end }}
+          {{- if .secret }}
+          secret:
+            {{- toYaml .secret | nindent 12 }}
+          {{- end }}
       {{- end }}
       {{- range .Values.deploymentVolumes }}
         - name: {{ .name }}
