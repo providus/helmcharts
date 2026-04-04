@@ -1,6 +1,6 @@
 apiVersion: v2
 name: "universal"
-version: "3.0"
+version: "3.0.0"
 
 appVersion: "0.0"
 type: application
