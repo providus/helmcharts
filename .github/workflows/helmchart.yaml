@@ -15,7 +15,7 @@ jobs:
       packages: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -43,7 +43,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Package and push Helm chart
-        if: steps.changes.outputs.chart-yaml == 'true'
+        if: steps.changes.outputs.chart-yaml == 'true' && github.ref_name == 'main'
         run: |
           helm package ./${{ env.CHART_NAME }} --version ${{ steps.set-variables.outputs.VERSION }}
           helm push ./${{ env.CHART_NAME }}-${{ steps.set-variables.outputs.VERSION }}.tgz oci://${{ steps.set-variables.outputs.REPOSITORY }}

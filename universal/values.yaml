@@ -1,6 +1,9 @@
 ## https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#replicas
 replicaCount: 1
 
+## Port used by Pod/Service/Ingress
+## used for ports in Pod and Service
+#port: 80
 ## alternative port usage if needed more than one
 ## the FIRST ONE in the list is used for Ingress
 ports:
@@ -26,6 +29,31 @@ ingress:
     kubernetes.io/ingress.class: nginx
   ## this is default vhost (change this)
   host: not.configured
+
+## Sidecar containers (list; each entry requires a unique "name" field)
+## https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/
+sidecars: []
+#sidecars:
+#  - name: cloudsql-proxy
+#    ## image defaults to image.name:image.tag if not set
+#    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:latest
+#    ## command override for this sidecar
+#    #command:
+#    #  - /cloud-sql-proxy
+#    #  - my-project:region:instance
+#    ## extra env vars for this sidecar (stacked on top of runVars)
+#    #runVars:
+#    #  SIDECAR_ONLY_VAR: "value"
+#    ## resource override; falls back to top-level resources if not set
+#    #resources:
+#    #  requests:
+#    #    cpu: 50m
+#    #    memory: 64Mi
+#    #  limits:
+#    #    cpu: 100m
+#    #    memory: 128Mi
+#  - name: log-shipper
+#    image: fluent/fluent-bit:latest
 
 ## Resources for each pod
 ## https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -173,3 +201,10 @@ remoteProxy:
 ## https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
 #nodeSelector:
 #  client: shared
+
+
+## Jobs
+## https://kubernetes.io/docs/concepts/workloads/controllers/job/
+#jobs:
+#  update-db:
+#    name: seed

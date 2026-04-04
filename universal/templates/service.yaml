@@ -8,10 +8,17 @@ metadata:
   labels:
     app: {{ .Release.Name }}
 spec:
+  {{- if .Values.port }}
   ports:
-  {{- range .Values.ports }}
+    - port: {{ .Values.port }}
+      name: http
+  {{- end }}
+  {{- if .Values.ports }}
+  ports:
+    {{- range .Values.ports }}
     - port: {{ . }}
       name: {{ printf "port%d" (. | int) }}
+    {{- end }}
   {{- end }}
   selector:
     app: {{ .Release.Name }}

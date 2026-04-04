@@ -29,10 +29,17 @@ spec:
         - name: {{ .Release.Name }}
           image: {{ .Values.image.name }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.port }}
           ports:
-          {{- range .Values.ports }}
+            - name: http
+              containerPort: {{ .Values.port }}
+          {{- end }}
+          {{- if .Values.ports }}
+          ports:
+            {{- range .Values.ports }}
             - name: {{ printf "port%d" (. | int) }}
               containerPort: {{ . }}
+            {{- end }}
           {{- end }}
           env:
           {{- range $key, $value := .Values.runVars }}
@@ -49,23 +56,79 @@ spec:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
             {{- toYaml .Values.readinessProbe | nindent 12 }}
-          {{- if .Values.volumes }}
           volumeMounts:
+          {{- range .Values.deploymentConfigMaps }}
+            - name: {{ .configMapName }}
+              mountPath: {{ .mountPath }}/{{ .name }}
+              subPath: {{ .name }}
+          {{- end }}
+          {{- range .Values.deploymentVolumes }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+          {{- end }}
           {{- range .Values.volumes }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
-            {{- if .subPath }}
-              subPath: {{ .subPath }}
-            {{- end }}
           {{- end }}
-      {{- end }}
-    {{- if .Values.volumes }}
-      volumes:
-        {{- range .Values.volumes }}
+        {{- range .Values.sidecars }}
         - name: {{ .name }}
-          {{- toYaml .yaml | nindent 10 }}
+          image: {{ .image | default (printf "%s:%s" $.Values.image.name (toString $.Values.image.tag)) }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          {{- if .command }}
+          command:
+            {{- toYaml .command | nindent 12 }}
+          {{- end }}
+          env:
+          {{- range $key, $value := $.Values.runVars }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+          {{- end }}
+          {{- range $key, $value := .runVars }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+          {{- end }}
+          resources:
+            {{- toYaml (.resources | default $.Values.resources) | nindent 12 }}
+          {{- if or $.Values.deploymentConfigMaps $.Values.deploymentVolumes $.Values.volumes }}
+          volumeMounts:
+          {{- range $.Values.deploymentConfigMaps }}
+            - name: {{ .configMapName }}
+              mountPath: {{ .mountPath }}/{{ .name }}
+              subPath: {{ .name }}
+          {{- end }}
+          {{- range $.Values.deploymentVolumes }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+          {{- end }}
+          {{- range $.Values.volumes }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+          {{- end }}
+          {{- end }}
         {{- end }}
-    {{- end }}
+      volumes:
+      {{- range .Values.deploymentConfigMaps }}
+        - name: {{ .configMapName }}
+          configMap:
+            name: {{ $.Release.Name }}-{{ .configMapName }}
+      {{- end }}
+      {{- range .Values.volumes }}
+        - name: {{ .name }}
+        {{- if .emptyDir }}
+          emptyDir:
+            {{- toYaml .emptyDir | nindent 12 }}
+        {{- end }}
+        {{- if .nfs }}
+          nfs:
+            {{- toYaml .nfs | nindent 12 }}
+        {{- end }}
+      {{- end }}
+      {{- range .Values.deploymentVolumes }}
+        - name: {{ .name }}
+          nfs:
+            server: {{ .server }}
+            path: {{ .share }}
+      {{- end }}
       {{- if .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml .Values.nodeSelector | nindent 8 }}
