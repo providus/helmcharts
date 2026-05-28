@@ -20,7 +20,7 @@ spec:
     spec:
       imagePullSecrets:
         {{- toYaml .Values.imagePullSecrets | nindent 8 }}
-      serviceAccountName: {{ .Values.serviceAccount }}
+      serviceAccountName:  {{ .Values.serviceAccount }}
       {{- if .Values.initContainers }}
       initContainers:
         {{- toYaml .Values.initContainers | nindent 8 }}
@@ -45,6 +45,15 @@ spec:
           {{- range $key, $value := .Values.runVars }}
             - name: {{ $key }}
               value: {{ $value | quote }}
+          {{- end }}
+          {{- if .Values.secretEnvs }}
+          {{- range .Values.secretEnvs }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretName }}
+                  key: {{ .key | default .name }}
+          {{- end }}
           {{- end }}
           {{- if .Values.command }}
           command:
@@ -121,6 +130,13 @@ spec:
         {{- if .nfs }}
           nfs:
             {{- toYaml .nfs | nindent 12 }}
+        {{- end }}
+        {{- if .persistentVolumeClaim }}
+          persistentVolumeClaim:
+            {{- toYaml .persistentVolumeClaim | nindent 12 }}
+        {{- else if .pvcName }}
+          persistentVolumeClaim:
+            claimName: {{ $.Release.Name }}-{{ .pvcName }}
         {{- end }}
       {{- end }}
       {{- range .Values.deploymentVolumes }}

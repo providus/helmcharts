@@ -16,6 +16,14 @@ spec:
         - name: {{ $.Release.Name }}-{{ .name }}
         {{- if $.Values.image.job }}
           image: {{ $.Values.image.job }}
+        {{- else if .image }}
+          {{- if contains ":" .image }}
+          image: {{ .image }}
+          {{- else }}
+          image: {{ $.Values.image.name }}:{{ .image }}
+          {{- end }}
+        {{- else if .useMainImage }}
+          image: {{ $.Values.image.name }}:{{ $.Values.image.tag }}
         {{- else }}
           image: {{ $.Values.image.name }}:{{ $.Values.image.tag }}-{{ .name }}
         {{- end }}
@@ -30,6 +38,15 @@ spec:
           {{- range $key, $value := $.Values.runVars }}
             - name: {{ $key }}
               value: {{ $value | quote }}
+          {{- end }}
+          {{- if $.Values.secretEnvs }}
+          {{- range $.Values.secretEnvs }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretName }}
+                  key: {{ .key | default .name }}
+          {{- end }}
           {{- end }}
           resources:
             {{- toYaml $.Values.resources | nindent 16 }}

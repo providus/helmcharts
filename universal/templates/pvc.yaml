@@ -4,6 +4,7 @@
   {{- $name := $pvc.name }}
   {{- $size := $pvc.size }}
   {{- $class := $pvc.class }}
+  {{- $volumeName := $pvc.volumeName }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -11,7 +12,9 @@ metadata:
   namespace: {{ $.Values.nameSpace }}
 spec:
   storageClassName: {{ $class }}
-  volumeName: {{ $name }}
+  {{- if $volumeName }}
+  volumeName: {{ $volumeName }}
+  {{- end }}
   resources:
     requests:
       storage: {{ $size }}
