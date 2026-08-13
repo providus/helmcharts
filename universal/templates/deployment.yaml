@@ -131,6 +131,10 @@ spec:
           nfs:
             {{- toYaml .nfs | nindent 12 }}
         {{- end }}
+        {{- if .secret }}
+          secret:
+            {{- toYaml .secret | nindent 12 }}
+        {{- end }}
         {{- if .persistentVolumeClaim }}
           persistentVolumeClaim:
             {{- toYaml .persistentVolumeClaim | nindent 12 }}
