@@ -221,3 +221,8 @@ remoteProxy:
 #jobs:
 #  update-db:
 #    name: seed
+
+pgbouncerCa:
+  enabled: false
+  secretName: pgbouncer-ca
+  caBase64: ""
