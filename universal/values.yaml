@@ -201,6 +201,11 @@ remoteProxy:
 #    nfs:
 #      server: 10.13.2.122
 #      path: "/NFS/pke/dev-cw/bctest"
+#  - name: app-secret
+#    mountPath: /etc/app/secret
+#    mountInJobs: true   # mount in jobs too (default: deployment only)
+#    secret:
+#      secretName: app-secret
 ## This is "older" variant of volume (deprecated by code above)
 #deploymentVolumes:
 #  - name: nfs-share
