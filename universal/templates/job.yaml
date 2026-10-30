@@ -60,11 +60,41 @@ spec:
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
           {{- end }}
+          {{- range $.Values.volumes }}
+          {{- if .mountInJobs }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+          {{- end }}
+          {{- end }}
       volumes:
       {{- range $.Values.deploymentConfigMaps }}
         - name: {{ .name }}
           configMap:
             name: {{ $.Release.Name }}-{{ .configMapName | trunc 63 | replace "." "-" | lower }}
+      {{- end }}
+      {{- range $.Values.volumes }}
+      {{- if .mountInJobs }}
+        - name: {{ .name }}
+        {{- if .emptyDir }}
+          emptyDir:
+            {{- toYaml .emptyDir | nindent 12 }}
+        {{- end }}
+        {{- if .nfs }}
+          nfs:
+            {{- toYaml .nfs | nindent 12 }}
+        {{- end }}
+        {{- if .secret }}
+          secret:
+            {{- toYaml .secret | nindent 12 }}
+        {{- end }}
+        {{- if .persistentVolumeClaim }}
+          persistentVolumeClaim:
+            {{- toYaml .persistentVolumeClaim | nindent 12 }}
+        {{- else if .pvcName }}
+          persistentVolumeClaim:
+            claimName: {{ $.Release.Name }}-{{ .pvcName }}
+        {{- end }}
+      {{- end }}
       {{- end }}
       {{- range $.Values.deploymentVolumes }}
         - name: {{ .name }}
