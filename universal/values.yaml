@@ -8,6 +8,7 @@ replicaCount: 1
 ## the FIRST ONE in the list is used for Ingress
 ports:
  - 80
+ - 81
 
 ## Pod image
 image:
