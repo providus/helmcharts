@@ -41,7 +41,7 @@ spec:
               containerPort: {{ . }}
             {{- end }}
           {{- end }}
-          {{- if .Values.secretEnvs }}
+          env:
           {{- range .Values.secretEnvs }}
             - name: {{ .name }}
               valueFrom:
@@ -49,8 +49,6 @@ spec:
                   name: {{ .secretName }}
                   key: {{ .key | default .name }}
           {{- end }}
-          {{- end }}
-          env:
           {{- range $key, $value := .Values.runVars }}
             - name: {{ $key }}
               value: {{ $value | quote }}
